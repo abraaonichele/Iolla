@@ -1,6 +1,6 @@
 {
   "name": "iolla-desktop",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Aplicativo desktop IOLLA para gerenciamento de pedidos, WhatsApp e trocas.",
   "main": "electron/main.js",
   "author": "OpenAI Codex",
