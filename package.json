@@ -1,0 +1,42 @@
+{
+  "name": "iolla-desktop",
+  "version": "1.0.0",
+  "description": "Aplicativo desktop IOLLA para gerenciamento de pedidos, WhatsApp e trocas.",
+  "main": "electron/main.js",
+  "author": "OpenAI Codex",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "build:icons": "node scripts/generate-icons.mjs",
+    "build": "vite build",
+    "dist": "npm run build:icons && npm run build && electron-builder -c electron-builder.config.cjs",
+    "dist:mac": "npm run build:icons && npm run build && electron-builder -c electron-builder.config.cjs --mac",
+    "dist:win": "npm run build:icons && npm run build && electron-builder -c electron-builder.config.cjs --win nsis --x64",
+    "pack": "npm run build:icons && npm run build && electron-builder -c electron-builder.config.cjs --dir",
+    "publish:mac": "node scripts/validate-publish-env.mjs && npm run build:icons && npm run build && electron-builder -c electron-builder.config.cjs --mac --publish always",
+    "publish:win": "node scripts/validate-publish-env.mjs && npm run build:icons && npm run build && electron-builder -c electron-builder.config.cjs --win nsis --x64 --publish always",
+    "release:patch": "npm version patch && git push origin main --follow-tags",
+    "release:minor": "npm version minor && git push origin main --follow-tags",
+    "release:major": "npm version major && git push origin main --follow-tags"
+  },
+  "dependencies": {
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.8.3",
+    "firebase": "^10.14.1",
+    "lucide-react": "^0.454.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "electron": "^36.3.2",
+    "electron-builder": "^26.0.12",
+    "postcss": "^8.4.49",
+    "png-to-ico": "^2.1.8",
+    "tailwindcss": "^3.4.17",
+    "vite": "^5.4.11",
+    "wait-on": "^8.0.3"
+  }
+}
