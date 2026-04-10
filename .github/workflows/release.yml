@@ -37,7 +37,6 @@ jobs:
 
   macos:
     name: Publicar macOS
-    if: ${{ secrets.CSC_LINK != '' && secrets.CSC_KEY_PASSWORD != '' && secrets.APPLE_ID != '' && secrets.APPLE_APP_SPECIFIC_PASSWORD != '' && secrets.APPLE_TEAM_ID != '' }}
     runs-on: macos-latest
     env:
       GH_OWNER: ${{ github.repository_owner }}
@@ -49,20 +48,44 @@ jobs:
       APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
+      - name: Verificar segredos do macOS
+        id: verify_macos_secrets
+        shell: bash
+        run: |
+          missing=0
+          for var in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            if [ -z "${!var}" ]; then
+              echo "Segredo ausente: $var"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -eq 1 ]; then
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            echo "Publicação macOS será ignorada por falta de segredos."
+          else
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
+        if: ${{ steps.verify_macos_secrets.outputs.should_publish == 'true' }}
         uses: actions/checkout@v4
 
       - name: Node.js
+        if: ${{ steps.verify_macos_secrets.outputs.should_publish == 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
       - name: Instalar dependências
+        if: ${{ steps.verify_macos_secrets.outputs.should_publish == 'true' }}
         run: npm ci
 
       - name: Validar tag
+        if: ${{ steps.verify_macos_secrets.outputs.should_publish == 'true' }}
         run: node scripts/assert-tag-version.mjs ${{ github.ref_name }}
 
       - name: Publicar macOS
+        if: ${{ steps.verify_macos_secrets.outputs.should_publish == 'true' }}
         run: npm run publish:mac
