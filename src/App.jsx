@@ -1465,7 +1465,10 @@ function App() {
     <div className="relative flex h-screen overflow-hidden bg-gray-50 font-sans text-[#4a2c2c]">
       <button
         ref={sidebarToggleButtonRef}
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        onClick={(event) => {
+          event.stopPropagation();
+          setIsSidebarOpen((previous) => !previous);
+        }}
         className={`fixed top-4 z-50 rounded-r-xl border border-[#e6d0d4] border-l-0 bg-[#fae8eb] p-2 text-[#5c3a3a] shadow-md transition-all duration-300 ease-in-out hover:bg-[#f0dadd] ${
           isSidebarOpen ? "left-64" : "left-0"
         }`}
