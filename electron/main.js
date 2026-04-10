@@ -50,6 +50,10 @@ function formatReleaseNotes(releaseNotes) {
 function getUpdateErrorMessage(error) {
   const rawMessage = error?.message || String(error);
 
+  if (rawMessage.includes("Cannot find latest-mac.yml")) {
+    return "A release mais recente no GitHub ainda não inclui os arquivos de atualização do macOS.";
+  }
+
   if (rawMessage.includes("Cannot find app-update.yml")) {
     return "Este instalador ainda não foi publicado com configuração de atualização automática.";
   }

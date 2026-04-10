@@ -466,10 +466,10 @@ function App() {
       }
     };
 
-    document.addEventListener("mousedown", handleAutoCollapseSidebar, true);
+    document.addEventListener("click", handleAutoCollapseSidebar);
 
     return () => {
-      document.removeEventListener("mousedown", handleAutoCollapseSidebar, true);
+      document.removeEventListener("click", handleAutoCollapseSidebar);
     };
   }, [isSidebarOpen]);
 
