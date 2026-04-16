@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import iro from "@jaames/iro";
 import { initializeApp } from "firebase/app";
 import {
   addDoc,
@@ -98,31 +99,100 @@ const getInitialUpdateStatus = () => ({
   releaseNotes: null
 });
 
-const ColorPicker = ({ value, onChange }) => {
+const normalizeHexColor = (rawValue, fallback = "#e6d0d4") => {
+  if (typeof rawValue !== "string") return fallback;
+  const value = rawValue.trim();
+  if (/^#[0-9a-f]{6}$/i.test(value)) return value;
+  if (/^#[0-9a-f]{3}$/i.test(value)) {
+    return `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`.toLowerCase();
+  }
+  return fallback;
+};
+
+const IroColorWheel = ({ value, onChange }) => {
+  const containerRef = useRef(null);
+  const pickerRef = useRef(null);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    if (!containerRef.current || pickerRef.current) return;
+
+    const initialColor = normalizeHexColor(value);
+    const picker = iro.ColorPicker(containerRef.current, {
+      width: 260,
+      color: initialColor,
+      layoutDirection: "vertical",
+      layout: [
+        {
+          component: iro.ui.Wheel,
+          options: { wheelLightness: false }
+        },
+        {
+          component: iro.ui.Slider,
+          options: { sliderType: "value" }
+        }
+      ]
+    });
+
+    const handleChange = (color) => {
+      if (!onChangeRef.current) return;
+      onChangeRef.current(color.hexString);
+    };
+
+    picker.on("color:change", handleChange);
+    pickerRef.current = picker;
+
+    return () => {
+      picker.off("color:change", handleChange);
+      pickerRef.current = null;
+      if (containerRef.current) {
+        containerRef.current.innerHTML = "";
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!pickerRef.current) return;
+    const normalized = normalizeHexColor(value);
+    if (pickerRef.current.color.hexString.toLowerCase() !== normalized.toLowerCase()) {
+      pickerRef.current.color.hexString = normalized;
+    }
+  }, [value]);
+
+  return <div className="mx-auto w-fit" ref={containerRef} />;
+};
+
+const ColorPicker = ({ value, onChange, buttonLabel = "Escolher cor" }) => {
   const [showPicker, setShowPicker] = useState(false);
-  const [hue, setHue] = useState(0);
+  const [hexInput, setHexInput] = useState(normalizeHexColor(value));
+  const originalColorRef = useRef(normalizeHexColor(value));
 
-  const colors = [
-    // Rosados e Vermelhos
-    "#ff6b9d", "#ff85a2", "#ffa5b5", "#ffc4d0", "#ffe6eb",
-    // Laranjas
-    "#ff8c42", "#ffaa6b", "#ffc890", "#ffe0b5", "#fff0db",
-    // Amarelos
-    "#ffd166", "#ffe066", "#fff066", "#ffffa3", "#ffffcd",
-    // Verdes
-    "#95c66b", "#b3db5c", "#d1f047", "#e8ff6b", "#f0ff99",
-    // Azuis
-    "#4ecdc4", "#5fd9d3", "#6fe5de", "#92f0ec", "#b8f7f5",
-    // Roxos
-    "#9b59b6", "#b47fd9", "#d8b3f0", "#e8d5f2", "#f3e5ff",
-    // Tons neutros e pastéis
-    "#d4a5a5", "#e6d0d4", "#f0dadd", "#e6c7c7", "#f5e6e6"
-  ];
+  useEffect(() => {
+    if (!showPicker) return;
+    originalColorRef.current = normalizeHexColor(value);
+    setHexInput(normalizeHexColor(value));
+  }, [showPicker, value]);
 
-  const handleColorClick = (color) => {
-    onChange(color);
-    setShowPicker(false);
-  };
+  useEffect(() => {
+    if (!showPicker) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onChange(originalColorRef.current);
+        setShowPicker(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onChange, showPicker]);
+
+  const previewColor = normalizeHexColor(value);
 
   return (
     <div className="relative">
@@ -132,38 +202,107 @@ const ColorPicker = ({ value, onChange }) => {
       >
         <div
           className="h-6 w-6 rounded border border-[#d0d0d0]"
-          style={{ backgroundColor: value || "#e6d0d4" }}
+          style={{ backgroundColor: previewColor }}
         />
-        Cor do Card
+        {buttonLabel}
       </button>
 
       {showPicker && (
-        <div className="fixed inset-0 z-40" onClick={() => setShowPicker(false)} />
+        <div
+          className="fixed inset-0 z-[10010] bg-slate-900/30 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => {
+            onChange(originalColorRef.current);
+            setShowPicker(false);
+          }}
+        />
       )}
       {showPicker && (
-        <div className="absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 space-y-2 rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
-          <div className="grid grid-cols-5 gap-2">
-            {colors.map((color) => (
+        <div
+          className="fixed inset-0 z-[10020] flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => {
+            onChange(originalColorRef.current);
+            setShowPicker(false);
+          }}
+        >
+          <div
+            className="w-full max-w-md overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-150"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+              <div>
+                <h3 className="text-base font-bold text-[#5c3a3a]">Selecionar cor</h3>
+                <p className="mt-0.5 text-xs text-[#8a6a6a]">
+                  Arraste no c\u00edrculo para escolher e ajuste a luminosidade no slider.
+                </p>
+              </div>
               <button
-                key={color}
-                onClick={() => handleColorClick(color)}
-                className={`h-12 rounded-lg border-2 transition-all ${
-                  value === color
-                    ? "border-[#5c3a3a] shadow-lg scale-110"
-                    : "border-gray-300 hover:border-gray-400"
-                }`}
-                style={{ backgroundColor: color }}
-                title={color}
+                onClick={() => {
+                  onChange(originalColorRef.current);
+                  setShowPicker(false);
+                }}
+                className="rounded-lg p-2 text-[#8a6a6a] transition-colors hover:bg-[#fae8eb] hover:text-[#5c3a3a]"
+                title="Fechar"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4 px-6 py-5">
+              <IroColorWheel
+                value={previewColor}
+                onChange={(nextColor) => {
+                  const normalized = normalizeHexColor(nextColor);
+                  setHexInput(normalized);
+                  onChange(normalized);
+                }}
               />
-            ))}
-          </div>
-          <div className="flex gap-2 pt-2">
-            <button
-              onClick={() => setShowPicker(false)}
-              className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
-            >
-              Fechar
-            </button>
+
+              <div className="flex items-center gap-3">
+                <div
+                  className="h-10 w-10 rounded-lg border border-[#e6d0d4]"
+                  style={{ backgroundColor: previewColor }}
+                />
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs font-medium text-[#8a6a6a]">
+                    Hex
+                  </label>
+                  <input
+                    value={hexInput}
+                    onChange={(event) => {
+                      const nextValue = event.target.value;
+                      setHexInput(nextValue);
+                      const normalized = normalizeHexColor(nextValue, null);
+                      if (normalized) {
+                        onChange(normalized);
+                      }
+                    }}
+                    placeholder="#rrggbb"
+                    className="w-full rounded-lg border border-[#e6d0d4] px-3 py-2 text-sm text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+                    inputMode="text"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
+              <button
+                onClick={() => {
+                  onChange(originalColorRef.current);
+                  setShowPicker(false);
+                }}
+                className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 font-medium text-gray-600 transition-colors hover:bg-gray-100"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => setShowPicker(false)}
+                className="rounded-lg bg-[#5c3a3a] px-4 py-2 font-medium text-white shadow-sm shadow-[#e6d0d4] transition-colors hover:bg-[#4a2c2c]"
+              >
+                Aplicar
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -389,6 +528,7 @@ const StockTabModal = ({ isOpen, onClose, onSave, onDelete, isEditing, formData,
             <label className="mb-3 block text-sm font-medium text-[#8a6a6a]">Cor da Aba</label>
             <ColorPicker
               value={formData.color}
+              buttonLabel="Cor da Aba"
               onChange={(color) => updateField("color", color)}
             />
           </div>
@@ -490,6 +630,7 @@ const StockFormModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
             <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Cor do Card</label>
             <ColorPicker
               value={formData.cardColor || "#e6d0d4"}
+              buttonLabel="Cor do Card"
               onChange={(color) => updateField("cardColor", color)}
             />
           </div>
@@ -578,6 +719,7 @@ const StockEditModal = ({ isOpen, onClose, onSave, editData, setEditData }) => {
             <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Cor do Card</label>
             <ColorPicker
               value={editData.cardColor || "#e6d0d4"}
+              buttonLabel="Cor do Card"
               onChange={(color) => updateField("cardColor", color)}
             />
           </div>
@@ -1217,6 +1359,7 @@ function App() {
     const color = stockFormData.color.trim();
     const size = stockFormData.size.trim();
     const parsedQuantity = Number(stockFormData.quantity);
+    const cardColor = normalizeHexColor(stockFormData.cardColor);
 
     if (!model || !color || !size) {
       triggerError("Preencha modelo, cor e tamanho para cadastrar o estoque.");
@@ -1239,7 +1382,7 @@ function App() {
         color,
         size,
         quantity: parsedQuantity,
-        cardColor: stockFormData.cardColor,
+        cardColor,
         tabId: activeStockTab
       });
       closeStockFormModal();
@@ -1281,6 +1424,7 @@ function App() {
     }
 
     const parsedQuantity = Number(stockEditData.quantity);
+    const cardColor = normalizeHexColor(stockEditData.cardColor);
 
     if (!stockEditData.model.trim()) {
       triggerError("Digite um modelo válido.");
@@ -1298,7 +1442,7 @@ function App() {
         color: stockEditData.color.trim(),
         size: stockEditData.size.trim(),
         quantity: parsedQuantity,
-        cardColor: stockEditData.cardColor
+        cardColor
       });
       closeStockEditModal();
     } catch (error) {
@@ -1328,16 +1472,18 @@ function App() {
       return;
     }
 
+    const tabColor = normalizeHexColor(stockTabFormData.color);
+
     try {
       if (stockTabModal.isEditing) {
         await updateDoc(doc(db, "stockTabs", stockTabModal.tabId), {
           name: stockTabFormData.name.trim(),
-          color: stockTabFormData.color
+          color: tabColor
         });
       } else {
         const docRef = await addDoc(collection(db, "stockTabs"), {
           name: stockTabFormData.name.trim(),
-          color: stockTabFormData.color,
+          color: tabColor,
           createdAt: new Date().toISOString()
         });
         setActiveStockTab(docRef.id);
