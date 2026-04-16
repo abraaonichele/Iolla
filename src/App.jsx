@@ -654,7 +654,7 @@ const StockFormModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
   );
 };
 
-const StockEditModal = ({ isOpen, onClose, onSave, editData, setEditData }) => {
+const StockEditModal = ({ isOpen, onClose, onSave, onDelete, editData, setEditData }) => {
   if (!isOpen) return null;
 
   const updateField = (field, value) => {
@@ -724,19 +724,29 @@ const StockEditModal = ({ isOpen, onClose, onSave, editData, setEditData }) => {
             />
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
-          <button
-            onClick={onClose}
-            className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 font-medium text-gray-600 transition-colors hover:bg-gray-100"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onSave}
-            className="rounded-lg bg-[#5c3a3a] px-4 py-2 font-medium text-white shadow-sm shadow-[#e6d0d4] transition-colors hover:bg-[#4a2c2c]"
-          >
-            Atualizar
-          </button>
+        <div className="flex justify-between gap-3 border-t border-gray-100 px-6 py-4">
+          <div>
+            <button
+              onClick={onDelete}
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 font-medium text-red-600 transition-colors hover:bg-red-100"
+            >
+              Excluir item
+            </button>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 font-medium text-gray-600 transition-colors hover:bg-gray-100"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={onSave}
+              className="rounded-lg bg-[#5c3a3a] px-4 py-2 font-medium text-white shadow-sm shadow-[#e6d0d4] transition-colors hover:bg-[#4a2c2c]"
+            >
+              Atualizar
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1181,6 +1191,8 @@ function App() {
     setModalConfig({ isOpen: true, type: "trash", orderId: firestoreId });
   const requestPermanentDelete = (firestoreId) =>
     setModalConfig({ isOpen: true, type: "delete", orderId: firestoreId });
+  const requestStockDelete = (firestoreId) =>
+    setModalConfig({ isOpen: true, type: "delete-stock", orderId: firestoreId });
   const requestBulkMoveToTrash = () =>
     setModalConfig({ isOpen: true, type: "bulk-trash", orderId: null });
   const requestBulkPermanentDelete = () =>
@@ -1205,6 +1217,11 @@ function App() {
         if (order) {
           await deleteDoc(doc(db, "orders", order.firestoreId));
         }
+      } else if (type === "delete-stock") {
+        if (orderId) {
+          await deleteDoc(doc(db, "stock", orderId));
+        }
+        closeStockEditModal();
       } else if (type === "bulk-trash") {
         const updates = orders
           .filter((order) => selectedIds.includes(order.firestoreId))
@@ -1560,6 +1577,17 @@ function App() {
         confirmText: "Concluir",
         isDanger: false,
         showCancel: false
+      };
+    }
+
+    if (modalConfig.type === "delete-stock") {
+      return {
+        title: "Excluir item do estoque",
+        message:
+          "Tem certeza que deseja excluir este item do estoque? Esta ação não pode ser desfeita.",
+        confirmText: "Excluir",
+        isDanger: true,
+        showCancel: true
       };
     }
 
@@ -2491,6 +2519,7 @@ function App() {
         isOpen={stockEditModal.isOpen}
         onClose={closeStockEditModal}
         onSave={handleUpdateStockItem}
+        onDelete={() => requestStockDelete(stockEditModal.itemId)}
         editData={stockEditData}
         setEditData={setStockEditData}
       />
