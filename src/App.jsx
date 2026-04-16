@@ -185,15 +185,18 @@ const ColorPicker = ({ value, onChange }) => {
       </button>
 
       {showPicker && (
-        <div className="absolute left-0 top-full z-50 mt-2 space-y-3 rounded-lg border border-gray-200 bg-white p-4 shadow-lg">
+        <div className="fixed inset-0 z-40" onClick={() => setShowPicker(false)} />
+      )}
+      {showPicker && (
+        <div className="absolute left-1/2 top-full z-50 mt-2 max-h-96 w-72 -translate-x-1/2 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
           <canvas
             ref={canvasRef}
-            width={280}
-            height={280}
+            width={200}
+            height={200}
             onClick={handleCanvasClick}
-            className="cursor-crosshair rounded-full border border-gray-200"
+            className="cursor-crosshair mx-auto rounded-full border border-gray-200"
           />
-          <div className="space-y-2">
+          <div className="space-y-1">
             <label className="block text-xs font-medium text-[#8a6a6a]">Matiz: {hue}°</label>
             <input
               ref={sliderRef}
@@ -205,16 +208,16 @@ const ColorPicker = ({ value, onChange }) => {
               className="w-full"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-1">
             <button
               onClick={() => setShowPicker(false)}
-              className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
+              className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
             >
               Cancelar
             </button>
             <button
               onClick={handleColorSelect}
-              className="flex-1 rounded-lg bg-[#5c3a3a] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4a2c2c]"
+              className="flex-1 rounded-lg bg-[#5c3a3a] px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-[#4a2c2c]"
             >
               Aplicar
             </button>
