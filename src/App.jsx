@@ -23,6 +23,7 @@ import {
   MessageCircle,
   MessageSquare,
   Plus,
+  Package,
   RefreshCw,
   RotateCcw,
   Search,
@@ -278,6 +279,127 @@ const ReleaseNotesModal = ({ isOpen, onClose, version, releaseDate, releaseNotes
   );
 };
 
+const StockFormModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
+  if (!isOpen) return null;
+
+  const updateField = (field, value) => {
+    setFormData((current) => ({ ...current, [field]: value }));
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-lg overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200">
+        <div className="border-b border-gray-100 px-6 py-5">
+          <h3 className="text-lg font-bold text-[#5c3a3a]">Cadastrar Estoque</h3>
+          <p className="mt-1 text-sm text-[#8a6a6a]">
+            Preencha os dados para cadastrar um item no estoque.
+          </p>
+        </div>
+        <div className="space-y-4 px-6 py-5">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Modelo</label>
+            <input
+              type="text"
+              value={formData.model}
+              onChange={(event) => updateField("model", event.target.value)}
+              placeholder="Ex: Biquíni Cortininha"
+              className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Cor</label>
+              <input
+                type="text"
+                value={formData.color}
+                onChange={(event) => updateField("color", event.target.value)}
+                placeholder="Ex: Preto"
+                className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Tamanho</label>
+              <input
+                type="text"
+                value={formData.size}
+                onChange={(event) => updateField("size", event.target.value)}
+                placeholder="Ex: M"
+                className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Quantidade</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={formData.quantity}
+              onChange={(event) => updateField("quantity", event.target.value)}
+              placeholder="0"
+              className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 font-medium text-gray-600 transition-colors hover:bg-gray-100"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onSave}
+            className="rounded-lg bg-[#5c3a3a] px-4 py-2 font-medium text-white shadow-sm shadow-[#e6d0d4] transition-colors hover:bg-[#4a2c2c]"
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StockQuantityModal = ({ isOpen, onClose, onSave, quantity, setQuantity, itemName }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200">
+        <div className="border-b border-gray-100 px-6 py-5">
+          <h3 className="text-lg font-bold text-[#5c3a3a]">Editar Estoque</h3>
+          <p className="mt-1 text-sm text-[#8a6a6a]">{itemName || "Atualize a quantidade."}</p>
+        </div>
+        <div className="space-y-3 px-6 py-5">
+          <label className="block text-sm font-medium text-[#8a6a6a]">Nova quantidade</label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+            className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+          />
+        </div>
+        <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 font-medium text-gray-600 transition-colors hover:bg-gray-100"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onSave}
+            className="rounded-lg bg-[#5c3a3a] px-4 py-2 font-medium text-white shadow-sm shadow-[#e6d0d4] transition-colors hover:bg-[#4a2c2c]"
+          >
+            Atualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const StatusSelect = ({ currentStatus, onChange, disabled = false }) => {
   const styles = {
     "Sem produção": "border-red-200 bg-red-50 text-red-700",
@@ -363,6 +485,7 @@ function App() {
   });
   const [sortOption, setSortOption] = useState("id_desc");
   const [orders, setOrders] = useState([]);
+  const [stockItems, setStockItems] = useState([]);
   const [newOrder, setNewOrder] = useState({
     id: "",
     customer: "",
@@ -375,6 +498,19 @@ function App() {
   });
   const [updateStatus, setUpdateStatus] = useState(getInitialUpdateStatus);
   const [isReleaseNotesOpen, setIsReleaseNotesOpen] = useState(false);
+  const [stockFormModalOpen, setStockFormModalOpen] = useState(false);
+  const [stockFormData, setStockFormData] = useState({
+    model: "",
+    color: "",
+    size: "",
+    quantity: ""
+  });
+  const [stockQuantityModal, setStockQuantityModal] = useState({
+    isOpen: false,
+    itemId: null,
+    itemName: ""
+  });
+  const [stockQuantityEdit, setStockQuantityEdit] = useState("");
 
   const triggerError = (message) => {
     setModalConfig({
@@ -410,6 +546,44 @@ function App() {
         console.error("Erro no listener de pedidos:", error);
         triggerError(
           "Erro ao carregar dados do Firebase. Verifique as permissões e a conexão com a internet."
+        );
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const stockQuery = query(collection(db, "stock"));
+
+    const unsubscribe = onSnapshot(
+      stockQuery,
+      (snapshot) => {
+        const loadedStock = snapshot.docs
+          .map((snapshotDoc) => {
+            const data = snapshotDoc.data();
+            const parsedQuantity = Number(data.quantity);
+
+            return {
+              firestoreId: snapshotDoc.id,
+              model: (data.model || "").toString(),
+              color: (data.color || "").toString(),
+              size: (data.size || "").toString(),
+              quantity: Number.isFinite(parsedQuantity) ? parsedQuantity : 0
+            };
+          })
+          .sort((a, b) => {
+            const left = `${a.model} ${a.color} ${a.size}`.toLowerCase();
+            const right = `${b.model} ${b.color} ${b.size}`.toLowerCase();
+            return left.localeCompare(right, "pt-BR");
+          });
+
+        setStockItems(loadedStock);
+      },
+      (error) => {
+        console.error("Erro no listener de estoque:", error);
+        triggerError(
+          "Erro ao carregar o estoque no Firebase. Verifique as permissões e a conexão."
         );
       }
     );
@@ -482,6 +656,7 @@ function App() {
   const trocaCount = orders.filter(
     (order) => !order.deleted && order.category === "troca"
   ).length;
+  const stockCount = stockItems.length;
   const deletedOrdersCount = orders.filter((order) => order.deleted).length;
   const updateButtonDisabled =
     updateStatus.state === "development" ||
@@ -764,6 +939,93 @@ function App() {
     }
   };
 
+  const resetStockForm = () => {
+    setStockFormData({
+      model: "",
+      color: "",
+      size: "",
+      quantity: ""
+    });
+  };
+
+  const openStockFormModal = () => {
+    resetStockForm();
+    setStockFormModalOpen(true);
+  };
+
+  const closeStockFormModal = () => {
+    setStockFormModalOpen(false);
+    resetStockForm();
+  };
+
+  const handleSaveStockItem = async () => {
+    const model = stockFormData.model.trim();
+    const color = stockFormData.color.trim();
+    const size = stockFormData.size.trim();
+    const parsedQuantity = Number(stockFormData.quantity);
+
+    if (!model || !color || !size) {
+      triggerError("Preencha modelo, cor e tamanho para cadastrar o estoque.");
+      return;
+    }
+
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 0) {
+      triggerError("A quantidade do estoque precisa ser um número inteiro maior ou igual a zero.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "stock"), {
+        model,
+        color,
+        size,
+        quantity: parsedQuantity
+      });
+      closeStockFormModal();
+    } catch (error) {
+      console.error("Erro ao cadastrar item de estoque:", error);
+      triggerError("Não foi possível cadastrar o item no estoque.");
+    }
+  };
+
+  const openStockQuantityModal = (item) => {
+    setStockQuantityEdit(String(item.quantity ?? 0));
+    setStockQuantityModal({
+      isOpen: true,
+      itemId: item.firestoreId,
+      itemName: `${item.model || "-"} • ${item.color || "-"} • Tam ${item.size || "-"}`
+    });
+  };
+
+  const closeStockQuantityModal = () => {
+    setStockQuantityModal({ isOpen: false, itemId: null, itemName: "" });
+    setStockQuantityEdit("");
+  };
+
+  const handleUpdateStockQuantity = async () => {
+    const parsedQuantity = Number(stockQuantityEdit);
+
+    if (!stockQuantityModal.itemId) {
+      closeStockQuantityModal();
+      return;
+    }
+
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity < 0) {
+      triggerError("Digite uma nova quantidade válida (inteiro maior ou igual a zero).");
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, "stock", stockQuantityModal.itemId), {
+        quantity: parsedQuantity
+      });
+      closeStockQuantityModal();
+    } catch (error) {
+      console.error("Erro ao atualizar quantidade do estoque:", error);
+      triggerError("Não foi possível atualizar a quantidade do estoque.");
+    }
+  };
+
   const getMenuTitle = () => {
     if (activeMenu === "pedidos") return "Gerenciar Pedidos";
     if (activeMenu === "whatsapp") return "Gerenciar WhatsApp";
@@ -927,6 +1189,32 @@ function App() {
               }`}
             >
               {trocaCount}
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveMenu("estoque");
+              setCurrentView("list");
+            }}
+            className={`flex w-full items-center justify-between rounded-lg px-4 py-3 transition-all duration-300 ${
+              activeMenu === "estoque"
+                ? "bg-white text-[#5c3a3a] shadow-sm shadow-[#e6d0d4]"
+                : "text-[#8a6a6a] hover:bg-white/50 hover:text-[#5c3a3a]"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Package size={20} />
+              <span className="font-medium">Estoque</span>
+            </div>
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                activeMenu === "estoque"
+                  ? "bg-[#fae8eb] text-[#5c3a3a]"
+                  : "bg-white text-[#8a6a6a]"
+              }`}
+            >
+              {stockCount}
             </span>
           </button>
         </div>
@@ -1315,6 +1603,84 @@ function App() {
     </div>
   );
 
+  const renderStockList = () => (
+    <div className="relative space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div>
+          <h1 className="font-serif text-3xl text-[#5c3a3a]">Controle de Estoque</h1>
+          <p className="mt-1 text-[#8a6a6a]">
+            Visualize os itens e ajuste a quantidade disponível.
+          </p>
+        </div>
+        <Button onClick={openStockFormModal} icon={Plus}>
+          Cadastrar Estoque
+        </Button>
+      </div>
+
+      {stockItems.length === 0 ? (
+        <Card className="border border-[#f0dadd] p-10 text-center">
+          <div className="mx-auto mb-3 w-fit rounded-full bg-[#fae8eb] p-4 text-[#5c3a3a]">
+            <Package size={24} />
+          </div>
+          <h3 className="text-lg font-semibold text-[#5c3a3a]">Nenhum item no estoque</h3>
+          <p className="mt-1 text-sm text-[#8a6a6a]">
+            Clique em <strong>Cadastrar Estoque</strong> para adicionar o primeiro item.
+          </p>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {stockItems.map((item) => (
+            <Card key={item.firestoreId} className="border border-[#f0dadd] p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-[#5c3a3a]">{item.model || "-"}</h3>
+                  <p className="mt-1 text-sm text-[#8a6a6a]">
+                    {item.color || "-"} • Tam {item.size || "-"}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    item.quantity > 0
+                      ? "border border-green-200 bg-green-50 text-green-700"
+                      : "border border-red-200 bg-red-50 text-red-700"
+                  }`}
+                >
+                  {item.quantity} un.
+                </span>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-3 rounded-lg border border-[#f5eced] bg-[#fffafb] p-3 text-sm">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Modelo</p>
+                  <p className="font-medium text-[#5c3a3a]">{item.model || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Cor</p>
+                  <p className="font-medium text-[#5c3a3a]">{item.color || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Tamanho</p>
+                  <p className="font-medium text-[#5c3a3a]">{item.size || "-"}</p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex justify-end">
+                <Button
+                  variant="secondary"
+                  icon={Edit}
+                  onClick={() => openStockQuantityModal(item)}
+                  className="px-3 py-2 text-sm"
+                >
+                  Editar
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   const renderCreateOrder = () => (
     <div className="mx-auto max-w-2xl space-y-6 animate-in slide-in-from-right duration-300">
       <div className="flex items-center gap-4">
@@ -1540,6 +1906,8 @@ function App() {
 
         {activeMenu === "inicio" ? (
           renderHome()
+        ) : activeMenu === "estoque" ? (
+          <div className="mx-auto max-w-7xl p-8">{renderStockList()}</div>
         ) : (
           <div className="mx-auto max-w-7xl p-8">
             {currentView === "list" ? renderOrderList() : renderCreateOrder()}
@@ -1562,6 +1930,23 @@ function App() {
         isOpen={obsModal.isOpen}
         onClose={() => setObsModal({ ...obsModal, isOpen: false })}
         text={obsModal.text}
+      />
+
+      <StockFormModal
+        isOpen={stockFormModalOpen}
+        onClose={closeStockFormModal}
+        onSave={handleSaveStockItem}
+        formData={stockFormData}
+        setFormData={setStockFormData}
+      />
+
+      <StockQuantityModal
+        isOpen={stockQuantityModal.isOpen}
+        onClose={closeStockQuantityModal}
+        onSave={handleUpdateStockQuantity}
+        quantity={stockQuantityEdit}
+        setQuantity={setStockQuantityEdit}
+        itemName={stockQuantityModal.itemName}
       />
 
       <ReleaseNotesModal
