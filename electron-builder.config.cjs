@@ -38,7 +38,10 @@ module.exports = {
         arch: ["arm64"]
       }
     ],
-    artifactName: "${productName}-Installer-${version}-${arch}.${ext}"
+    artifactName: "${productName}-Installer-${version}-${arch}.${ext}",
+    signingStrategy: "auto",
+    sign: process.env.CSC_LINK ? undefined : false,
+    notarize: false
   },
   win: {
     icon: "icon.ico",

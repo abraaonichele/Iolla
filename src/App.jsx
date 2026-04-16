@@ -279,6 +279,103 @@ const ReleaseNotesModal = ({ isOpen, onClose, version, releaseDate, releaseNotes
   );
 };
 
+const StockTabModal = ({ isOpen, onClose, onSave, onDelete, isEditing, formData, setFormData }) => {
+  if (!isOpen) return null;
+
+  const updateField = (field, value) => {
+    setFormData((current) => ({ ...current, [field]: value }));
+  };
+
+  const colors = [
+    "#e6d0d4", // Rosa claro padrão
+    "#ffd1dc", // Rosa claro
+    "#ffe4e1", // Misty rose
+    "#f5e6e6", // Rosa muito claro
+    "#ddd0d4", // Rosa cinzento
+    "#d4d4e6", // Lilás claro
+    "#d4e6e6", // Ciano claro
+    "#e6f5ea", // Verde claro
+    "#f5f5dc", // Bege claro
+    "#fff0f5"  // Lavanda branca
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-lg overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200">
+        <div className="border-b border-gray-100 px-6 py-5">
+          <h3 className="text-lg font-bold text-[#5c3a3a]">
+            {isEditing ? "Editar Aba" : "Nova Aba de Estoque"}
+          </h3>
+          <p className="mt-1 text-sm text-[#8a6a6a]">
+            {isEditing
+              ? "Altere o nome e a cor da aba."
+              : "Crie uma nova aba para agrupar seus produtos."}
+          </p>
+        </div>
+        <div className="space-y-4 px-6 py-5">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Nome da Aba</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(event) => updateField("name", event.target.value)}
+              placeholder="Ex: Verão 2024"
+              className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+              maxLength="50"
+            />
+            <p className="mt-1 text-xs text-[#a88a8a]">{formData.name.length}/50</p>
+          </div>
+          <div>
+            <label className="mb-3 block text-sm font-medium text-[#8a6a6a]">Cor da Aba</label>
+            <div className="grid grid-cols-5 gap-2">
+              {colors.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => updateField("color", color)}
+                  className={`h-10 rounded-lg border-2 transition-all ${
+                    formData.color === color
+                      ? "border-[#5c3a3a] shadow-md"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  style={{ backgroundColor: color }}
+                  title={color}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between gap-3 border-t border-gray-100 px-6 py-4">
+          <div>
+            {isEditing && (
+              <button
+                onClick={onDelete}
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 font-medium text-red-600 transition-colors hover:bg-red-100"
+              >
+                Excluir Aba
+              </button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 font-medium text-gray-600 transition-colors hover:bg-gray-100"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={onSave}
+              disabled={!formData.name.trim()}
+              className="rounded-lg bg-[#5c3a3a] px-4 py-2 font-medium text-white shadow-sm shadow-[#e6d0d4] transition-colors hover:bg-[#4a2c2c] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isEditing ? "Atualizar" : "Criar Aba"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const StockFormModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
   if (!isOpen) return null;
 
@@ -360,26 +457,67 @@ const StockFormModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
   );
 };
 
-const StockQuantityModal = ({ isOpen, onClose, onSave, quantity, setQuantity, itemName }) => {
+const StockEditModal = ({ isOpen, onClose, onSave, editData, setEditData }) => {
   if (!isOpen) return null;
+
+  const updateField = (field, value) => {
+    setEditData((current) => ({ ...current, [field]: value }));
+  };
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-lg overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200">
         <div className="border-b border-gray-100 px-6 py-5">
           <h3 className="text-lg font-bold text-[#5c3a3a]">Editar Estoque</h3>
-          <p className="mt-1 text-sm text-[#8a6a6a]">{itemName || "Atualize a quantidade."}</p>
+          <p className="mt-1 text-sm text-[#8a6a6a]">
+            Atualize as informações do produto no estoque.
+          </p>
         </div>
-        <div className="space-y-3 px-6 py-5">
-          <label className="block text-sm font-medium text-[#8a6a6a]">Nova quantidade</label>
-          <input
-            type="number"
-            min="0"
-            step="1"
-            value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
-            className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
-          />
+        <div className="space-y-4 px-6 py-5">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Modelo</label>
+            <input
+              type="text"
+              value={editData.model}
+              onChange={(event) => updateField("model", event.target.value)}
+              placeholder="Ex: Biquíni Cortininha"
+              className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Cor</label>
+              <input
+                type="text"
+                value={editData.color}
+                onChange={(event) => updateField("color", event.target.value)}
+                placeholder="Ex: Preto"
+                className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Tamanho</label>
+              <input
+                type="text"
+                value={editData.size}
+                onChange={(event) => updateField("size", event.target.value)}
+                placeholder="Ex: M"
+                className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Quantidade</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={editData.quantity}
+              onChange={(event) => updateField("quantity", event.target.value)}
+              placeholder="0"
+              className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+            />
+          </div>
         </div>
         <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
           <button
@@ -505,12 +643,27 @@ function App() {
     size: "",
     quantity: ""
   });
-  const [stockQuantityModal, setStockQuantityModal] = useState({
+  const [stockEditModal, setStockEditModal] = useState({
     isOpen: false,
-    itemId: null,
-    itemName: ""
+    itemId: null
   });
-  const [stockQuantityEdit, setStockQuantityEdit] = useState("");
+  const [stockEditData, setStockEditData] = useState({
+    model: "",
+    color: "",
+    size: "",
+    quantity: ""
+  });
+  const [stockTabs, setStockTabs] = useState([]);
+  const [activeStockTab, setActiveStockTab] = useState(null);
+  const [stockTabModal, setStockTabModal] = useState({
+    isOpen: false,
+    isEditing: false,
+    tabId: null
+  });
+  const [stockTabFormData, setStockTabFormData] = useState({
+    name: "",
+    color: "#e6d0d4"
+  });
 
   const triggerError = (message) => {
     setModalConfig({
@@ -554,6 +707,39 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const stockTabsQuery = query(collection(db, "stockTabs"));
+
+    const unsubscribe = onSnapshot(
+      stockTabsQuery,
+      (snapshot) => {
+        const loadedTabs = snapshot.docs
+          .map((snapshotDoc) => {
+            const data = snapshotDoc.data();
+            return {
+              firestoreId: snapshotDoc.id,
+              name: data.name || "Sem nome",
+              color: data.color || "#e6d0d4",
+              createdAt: data.createdAt || new Date().toISOString()
+            };
+          })
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+        setStockTabs(loadedTabs);
+        if (loadedTabs.length > 0 && !activeStockTab) {
+          setActiveStockTab(loadedTabs[0].firestoreId);
+        } else if (loadedTabs.length === 0) {
+          setActiveStockTab(null);
+        }
+      },
+      (error) => {
+        console.error("Erro no listener de abas de estoque:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const stockQuery = query(collection(db, "stock"));
 
     const unsubscribe = onSnapshot(
@@ -569,7 +755,8 @@ function App() {
               model: (data.model || "").toString(),
               color: (data.color || "").toString(),
               size: (data.size || "").toString(),
-              quantity: Number.isFinite(parsedQuantity) ? parsedQuantity : 0
+              quantity: Number.isFinite(parsedQuantity) ? parsedQuantity : 0,
+              tabId: data.tabId || null
             };
           })
           .sort((a, b) => {
@@ -974,12 +1161,18 @@ function App() {
       return;
     }
 
+    if (!activeStockTab) {
+      triggerError("Crie uma aba de estoque primeiro.");
+      return;
+    }
+
     try {
       await addDoc(collection(db, "stock"), {
         model,
         color,
         size,
-        quantity: parsedQuantity
+        quantity: parsedQuantity,
+        tabId: activeStockTab
       });
       closeStockFormModal();
     } catch (error) {
@@ -988,41 +1181,121 @@ function App() {
     }
   };
 
-  const openStockQuantityModal = (item) => {
-    setStockQuantityEdit(String(item.quantity ?? 0));
-    setStockQuantityModal({
+  const openStockEditModal = (item) => {
+    setStockEditData({
+      model: item.model || "",
+      color: item.color || "",
+      size: item.size || "",
+      quantity: String(item.quantity ?? 0)
+    });
+    setStockEditModal({
       isOpen: true,
-      itemId: item.firestoreId,
-      itemName: `${item.model || "-"} • ${item.color || "-"} • Tam ${item.size || "-"}`
+      itemId: item.firestoreId
     });
   };
 
-  const closeStockQuantityModal = () => {
-    setStockQuantityModal({ isOpen: false, itemId: null, itemName: "" });
-    setStockQuantityEdit("");
+  const closeStockEditModal = () => {
+    setStockEditModal({ isOpen: false, itemId: null });
+    setStockEditData({
+      model: "",
+      color: "",
+      size: "",
+      quantity: ""
+    });
   };
 
-  const handleUpdateStockQuantity = async () => {
-    const parsedQuantity = Number(stockQuantityEdit);
+  const handleUpdateStockItem = async () => {
+    if (!stockEditModal.itemId) {
+      closeStockEditModal();
+      return;
+    }
 
-    if (!stockQuantityModal.itemId) {
-      closeStockQuantityModal();
+    const parsedQuantity = Number(stockEditData.quantity);
+
+    if (!stockEditData.model.trim()) {
+      triggerError("Digite um modelo válido.");
       return;
     }
 
     if (!Number.isInteger(parsedQuantity) || parsedQuantity < 0) {
-      triggerError("Digite uma nova quantidade válida (inteiro maior ou igual a zero).");
+      triggerError("Digite uma quantidade válida (inteiro maior ou igual a zero).");
       return;
     }
 
     try {
-      await updateDoc(doc(db, "stock", stockQuantityModal.itemId), {
+      await updateDoc(doc(db, "stock", stockEditModal.itemId), {
+        model: stockEditData.model.trim(),
+        color: stockEditData.color.trim(),
+        size: stockEditData.size.trim(),
         quantity: parsedQuantity
       });
-      closeStockQuantityModal();
+      closeStockEditModal();
     } catch (error) {
-      console.error("Erro ao atualizar quantidade do estoque:", error);
-      triggerError("Não foi possível atualizar a quantidade do estoque.");
+      console.error("Erro ao atualizar item do estoque:", error);
+      triggerError("Não foi possível atualizar o item do estoque.");
+    }
+  };
+
+  const openStockTabModal = (tab = null) => {
+    if (tab) {
+      setStockTabFormData({ name: tab.name, color: tab.color });
+      setStockTabModal({ isOpen: true, isEditing: true, tabId: tab.firestoreId });
+    } else {
+      setStockTabFormData({ name: "", color: "#e6d0d4" });
+      setStockTabModal({ isOpen: true, isEditing: false, tabId: null });
+    }
+  };
+
+  const closeStockTabModal = () => {
+    setStockTabModal({ isOpen: false, isEditing: false, tabId: null });
+    setStockTabFormData({ name: "", color: "#e6d0d4" });
+  };
+
+  const handleSaveStockTab = async () => {
+    if (!stockTabFormData.name.trim()) {
+      triggerError("Digite um nome para a aba.");
+      return;
+    }
+
+    try {
+      if (stockTabModal.isEditing) {
+        await updateDoc(doc(db, "stockTabs", stockTabModal.tabId), {
+          name: stockTabFormData.name.trim(),
+          color: stockTabFormData.color
+        });
+      } else {
+        const docRef = await addDoc(collection(db, "stockTabs"), {
+          name: stockTabFormData.name.trim(),
+          color: stockTabFormData.color,
+          createdAt: new Date().toISOString()
+        });
+        setActiveStockTab(docRef.id);
+      }
+      closeStockTabModal();
+    } catch (error) {
+      console.error("Erro ao salvar aba:", error);
+      triggerError("Não foi possível salvar a aba.");
+    }
+  };
+
+  const handleDeleteStockTab = async () => {
+    if (!stockTabModal.tabId) return;
+
+    try {
+      // Deletar todos os itens desta aba
+      const itemsToDelete = stockItems.filter((item) => item.tabId === stockTabModal.tabId);
+      for (const item of itemsToDelete) {
+        await deleteDoc(doc(db, "stock", item.firestoreId));
+      }
+      // Deletar a aba
+      await deleteDoc(doc(db, "stockTabs", stockTabModal.tabId));
+      closeStockTabModal();
+      if (activeStockTab === stockTabModal.tabId) {
+        setActiveStockTab(stockTabs.length > 1 ? stockTabs[0].firestoreId : null);
+      }
+    } catch (error) {
+      console.error("Erro ao deletar aba:", error);
+      triggerError("Não foi possível deletar a aba.");
     }
   };
 
@@ -1603,83 +1876,138 @@ function App() {
     </div>
   );
 
-  const renderStockList = () => (
-    <div className="relative space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="font-serif text-3xl text-[#5c3a3a]">Controle de Estoque</h1>
-          <p className="mt-1 text-[#8a6a6a]">
-            Visualize os itens e ajuste a quantidade disponível.
-          </p>
-        </div>
-        <Button onClick={openStockFormModal} icon={Plus}>
-          Cadastrar Estoque
-        </Button>
-      </div>
+  const renderStockList = () => {
+    const currentTabItems = activeStockTab
+      ? stockItems.filter((item) => item.tabId === activeStockTab)
+      : [];
 
-      {stockItems.length === 0 ? (
-        <Card className="border border-[#f0dadd] p-10 text-center">
-          <div className="mx-auto mb-3 w-fit rounded-full bg-[#fae8eb] p-4 text-[#5c3a3a]">
-            <Package size={24} />
+    return (
+      <div className="relative space-y-6 animate-in fade-in duration-500">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h1 className="font-serif text-3xl text-[#5c3a3a]">Controle de Estoque</h1>
+            <p className="mt-1 text-[#8a6a6a]">
+              Visualize os itens e ajuste a quantidade disponível.
+            </p>
           </div>
-          <h3 className="text-lg font-semibold text-[#5c3a3a]">Nenhum item no estoque</h3>
-          <p className="mt-1 text-sm text-[#8a6a6a]">
-            Clique em <strong>Cadastrar Estoque</strong> para adicionar o primeiro item.
-          </p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {stockItems.map((item) => (
-            <Card key={item.firestoreId} className="border border-[#f0dadd] p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-[#5c3a3a]">{item.model || "-"}</h3>
-                  <p className="mt-1 text-sm text-[#8a6a6a]">
-                    {item.color || "-"} • Tam {item.size || "-"}
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    item.quantity > 0
-                      ? "border border-green-200 bg-green-50 text-green-700"
-                      : "border border-red-200 bg-red-50 text-red-700"
-                  }`}
-                >
-                  {item.quantity} un.
-                </span>
-              </div>
+          <div className="flex gap-3">
+            <Button onClick={() => openStockTabModal()} icon={Plus} variant="secondary">
+              Nova Aba
+            </Button>
+            <Button onClick={openStockFormModal} icon={Plus}>
+              Cadastrar Estoque
+            </Button>
+          </div>
+        </div>
 
-              <div className="mt-4 grid grid-cols-3 gap-3 rounded-lg border border-[#f5eced] bg-[#fffafb] p-3 text-sm">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Modelo</p>
-                  <p className="font-medium text-[#5c3a3a]">{item.model || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Cor</p>
-                  <p className="font-medium text-[#5c3a3a]">{item.color || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Tamanho</p>
-                  <p className="font-medium text-[#5c3a3a]">{item.size || "-"}</p>
-                </div>
-              </div>
-
-              <div className="mt-5 flex justify-end">
-                <Button
-                  variant="secondary"
-                  icon={Edit}
-                  onClick={() => openStockQuantityModal(item)}
-                  className="px-3 py-2 text-sm"
-                >
-                  Editar
-                </Button>
+        {stockTabs.length === 0 ? (
+          <Card className="border border-[#f0dadd] p-10 text-center">
+            <div className="mx-auto mb-3 w-fit rounded-full bg-[#fae8eb] p-4 text-[#5c3a3a]">
+              <Package size={24} />
+            </div>
+            <h3 className="text-lg font-semibold text-[#5c3a3a]">Nenhuma aba criada</h3>
+            <p className="mt-1 text-sm text-[#8a6a6a]">
+              Clique em <strong>Nova Aba</strong> para começar a organizar seu estoque.
+            </p>
+          </Card>
+        ) : (
+          <>
+            <Card className="border border-[#f0dadd] p-4">
+              <div className="flex flex-wrap gap-2">
+                {stockTabs.map((tab) => (
+                  <div
+                    key={tab.firestoreId}
+                    className={`group relative inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                      activeStockTab === tab.firestoreId
+                        ? "ring-2 ring-[#5c3a3a] ring-offset-2"
+                        : ""
+                    }`}
+                    style={{ backgroundColor: tab.color }}
+                  >
+                    <button
+                      onClick={() => setActiveStockTab(tab.firestoreId)}
+                      className="text-[#5c3a3a] outline-none transition-opacity hover:opacity-80"
+                    >
+                      {tab.name}
+                    </button>
+                    <button
+                      onClick={() => openStockTabModal(tab)}
+                      className="ml-2 opacity-0 transition-all group-hover:opacity-100"
+                      title="Editar aba"
+                    >
+                      <Edit size={14} className="text-[#5c3a3a]" />
+                    </button>
+                  </div>
+                ))}
               </div>
             </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+
+            {currentTabItems.length === 0 ? (
+              <Card className="border border-[#f0dadd] p-10 text-center">
+                <div className="mx-auto mb-3 w-fit rounded-full bg-[#fae8eb] p-4 text-[#5c3a3a]">
+                  <Package size={24} />
+                </div>
+                <h3 className="text-lg font-semibold text-[#5c3a3a]">Nenhum item nesta aba</h3>
+                <p className="mt-1 text-sm text-[#8a6a6a]">
+                  Clique em <strong>Cadastrar Estoque</strong> para adicionar itens a esta aba.
+                </p>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {currentTabItems.map((item) => (
+                  <Card key={item.firestoreId} className="border border-[#f0dadd] p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-semibold text-[#5c3a3a]">{item.model || "-"}</h3>
+                        <p className="mt-1 text-sm text-[#8a6a6a]">
+                          {item.color || "-"} • Tam {item.size || "-"}
+                        </p>
+                      </div>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          item.quantity > 0
+                            ? "border border-green-200 bg-green-50 text-green-700"
+                            : "border border-red-200 bg-red-50 text-red-700"
+                        }`}
+                      >
+                        {item.quantity} un.
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-3 gap-3 rounded-lg border border-[#f5eced] bg-[#fffafb] p-3 text-sm">
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Modelo</p>
+                        <p className="font-medium text-[#5c3a3a]">{item.model || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Cor</p>
+                        <p className="font-medium text-[#5c3a3a]">{item.color || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Tamanho</p>
+                        <p className="font-medium text-[#5c3a3a]">{item.size || "-"}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 flex justify-end">
+                      <Button
+                        variant="secondary"
+                        icon={Edit}
+                        onClick={() => openStockEditModal(item)}
+                        className="px-3 py-2 text-sm"
+                      >
+                        Editar
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
 
   const renderCreateOrder = () => (
     <div className="mx-auto max-w-2xl space-y-6 animate-in slide-in-from-right duration-300">
@@ -1940,13 +2268,22 @@ function App() {
         setFormData={setStockFormData}
       />
 
-      <StockQuantityModal
-        isOpen={stockQuantityModal.isOpen}
-        onClose={closeStockQuantityModal}
-        onSave={handleUpdateStockQuantity}
-        quantity={stockQuantityEdit}
-        setQuantity={setStockQuantityEdit}
-        itemName={stockQuantityModal.itemName}
+      <StockEditModal
+        isOpen={stockEditModal.isOpen}
+        onClose={closeStockEditModal}
+        onSave={handleUpdateStockItem}
+        editData={stockEditData}
+        setEditData={setStockEditData}
+      />
+
+      <StockTabModal
+        isOpen={stockTabModal.isOpen}
+        onClose={closeStockTabModal}
+        onSave={handleSaveStockTab}
+        onDelete={handleDeleteStockTab}
+        isEditing={stockTabModal.isEditing}
+        formData={stockTabFormData}
+        setFormData={setStockTabFormData}
       />
 
       <ReleaseNotesModal
