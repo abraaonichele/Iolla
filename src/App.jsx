@@ -1386,6 +1386,7 @@ function App() {
               >
                 <option value="Sedex">Sedex</option>
                 <option value="Loggi">Loggi</option>
+                <option value="Joinville">Joinville</option>
                 <option value="Sedex viagem">Sedex viagem</option>
                 <option value="Loggi viagem">Loggi viagem</option>
                 <option value="Sedex Urgente">Sedex Urgente</option>
