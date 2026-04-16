@@ -98,6 +98,133 @@ const getInitialUpdateStatus = () => ({
   releaseNotes: null
 });
 
+const ColorPicker = ({ value, onChange }) => {
+  const canvasRef = useRef(null);
+  const sliderRef = useRef(null);
+  const [hue, setHue] = useState(0);
+  const [showPicker, setShowPicker] = useState(false);
+
+  // Desenhar paleta circular no canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxRadius = Math.min(width, height) / 2 - 5;
+
+    // Limpar canvas
+    ctx.fillStyle = "#f9fafb";
+    ctx.fillRect(0, 0, width, height);
+
+    // Desenhar paleta circular
+    for (let angle = 0; angle < 360; angle += 1) {
+      const startAngle = ((angle - 90) * Math.PI) / 180;
+      const endAngle = ((angle + 1 - 90) * Math.PI) / 180;
+
+      for (let radius = 0; radius <= maxRadius; radius += 2) {
+        const saturation = (radius / maxRadius) * 100;
+        const lightness = 50 + (hue % 360) * 0.1 - saturation * 0.1;
+        ctx.fillStyle = `hsl(${angle}, ${saturation}%, ${Math.max(30, Math.min(70, lightness))}%)`;
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.lineTo(centerX, centerY);
+        ctx.fill();
+      }
+    }
+
+    // Desenhar circulo do hue ao redor
+    ctx.strokeStyle = "#d1d5db";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, maxRadius, 0, Math.PI * 2);
+    ctx.stroke();
+  }, [hue]);
+
+  const handleCanvasClick = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    const dx = x - centerX;
+    const dy = y - centerY;
+    let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+    if (angle < 0) angle += 360;
+
+    setHue(Math.round(angle));
+  };
+
+  const handleSliderChange = (e) => {
+    setHue(Number(e.target.value));
+  };
+
+  const handleColorSelect = () => {
+    const hslColor = `hsl(${hue}, 70%, 60%)`;
+    onChange(hslColor);
+    setShowPicker(false);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShowPicker(!showPicker)}
+        className="flex items-center gap-2 rounded-lg border border-[#e6d0d4] bg-white px-3 py-2 text-sm font-medium text-[#5c3a3a] transition-all hover:bg-[#fae8eb]"
+      >
+        <div
+          className="h-6 w-6 rounded border border-[#d0d0d0]"
+          style={{ backgroundColor: value || "#e6d0d4" }}
+        />
+        Cor do Card
+      </button>
+
+      {showPicker && (
+        <div className="absolute left-0 top-full z-50 mt-2 space-y-3 rounded-lg border border-gray-200 bg-white p-4 shadow-lg">
+          <canvas
+            ref={canvasRef}
+            width={280}
+            height={280}
+            onClick={handleCanvasClick}
+            className="cursor-crosshair rounded-full border border-gray-200"
+          />
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-[#8a6a6a]">Matiz: {hue}°</label>
+            <input
+              ref={sliderRef}
+              type="range"
+              min="0"
+              max="360"
+              value={hue}
+              onChange={handleSliderChange}
+              className="w-full"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowPicker(false)}
+              className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleColorSelect}
+              className="flex-1 rounded-lg bg-[#5c3a3a] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#4a2c2c]"
+            >
+              Aplicar
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const getUpdateBadgeClassName = (state) => {
   if (state === "downloaded") {
     return "border-green-200 bg-green-50 text-green-700";
@@ -286,19 +413,6 @@ const StockTabModal = ({ isOpen, onClose, onSave, onDelete, isEditing, formData,
     setFormData((current) => ({ ...current, [field]: value }));
   };
 
-  const colors = [
-    "#e6d0d4", // Rosa claro padrão
-    "#ffd1dc", // Rosa claro
-    "#ffe4e1", // Misty rose
-    "#f5e6e6", // Rosa muito claro
-    "#ddd0d4", // Rosa cinzento
-    "#d4d4e6", // Lilás claro
-    "#d4e6e6", // Ciano claro
-    "#e6f5ea", // Verde claro
-    "#f5f5dc", // Bege claro
-    "#fff0f5"  // Lavanda branca
-  ];
-
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-lg overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200">
@@ -327,21 +441,10 @@ const StockTabModal = ({ isOpen, onClose, onSave, onDelete, isEditing, formData,
           </div>
           <div>
             <label className="mb-3 block text-sm font-medium text-[#8a6a6a]">Cor da Aba</label>
-            <div className="grid grid-cols-5 gap-2">
-              {colors.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => updateField("color", color)}
-                  className={`h-10 rounded-lg border-2 transition-all ${
-                    formData.color === color
-                      ? "border-[#5c3a3a] shadow-md"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  style={{ backgroundColor: color }}
-                  title={color}
-                />
-              ))}
-            </div>
+            <ColorPicker
+              value={formData.color}
+              onChange={(color) => updateField("color", color)}
+            />
           </div>
         </div>
         <div className="flex justify-between gap-3 border-t border-gray-100 px-6 py-4">
@@ -437,6 +540,13 @@ const StockFormModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
               className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
             />
           </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Cor do Card</label>
+            <ColorPicker
+              value={formData.cardColor || "#e6d0d4"}
+              onChange={(color) => updateField("cardColor", color)}
+            />
+          </div>
         </div>
         <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
           <button
@@ -516,6 +626,13 @@ const StockEditModal = ({ isOpen, onClose, onSave, editData, setEditData }) => {
               onChange={(event) => updateField("quantity", event.target.value)}
               placeholder="0"
               className="w-full rounded-lg border border-[#e6d0d4] p-3 text-[#5c3a3a] outline-none transition-all focus:ring-2 focus:ring-[#5c3a3a]/20"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[#8a6a6a]">Cor do Card</label>
+            <ColorPicker
+              value={editData.cardColor || "#e6d0d4"}
+              onChange={(color) => updateField("cardColor", color)}
             />
           </div>
         </div>
@@ -641,7 +758,8 @@ function App() {
     model: "",
     color: "",
     size: "",
-    quantity: ""
+    quantity: "",
+    cardColor: "#e6d0d4"
   });
   const [stockEditModal, setStockEditModal] = useState({
     isOpen: false,
@@ -651,7 +769,8 @@ function App() {
     model: "",
     color: "",
     size: "",
-    quantity: ""
+    quantity: "",
+    cardColor: "#e6d0d4"
   });
   const [stockTabs, setStockTabs] = useState([]);
   const [activeStockTab, setActiveStockTab] = useState(null);
@@ -756,6 +875,7 @@ function App() {
               color: (data.color || "").toString(),
               size: (data.size || "").toString(),
               quantity: Number.isFinite(parsedQuantity) ? parsedQuantity : 0,
+              cardColor: data.cardColor || "#e6d0d4",
               tabId: data.tabId || null
             };
           })
@@ -1131,7 +1251,8 @@ function App() {
       model: "",
       color: "",
       size: "",
-      quantity: ""
+      quantity: "",
+      cardColor: "#e6d0d4"
     });
   };
 
@@ -1172,6 +1293,7 @@ function App() {
         color,
         size,
         quantity: parsedQuantity,
+        cardColor: stockFormData.cardColor,
         tabId: activeStockTab
       });
       closeStockFormModal();
@@ -1186,7 +1308,8 @@ function App() {
       model: item.model || "",
       color: item.color || "",
       size: item.size || "",
-      quantity: String(item.quantity ?? 0)
+      quantity: String(item.quantity ?? 0),
+      cardColor: item.cardColor || "#e6d0d4"
     });
     setStockEditModal({
       isOpen: true,
@@ -1200,7 +1323,8 @@ function App() {
       model: "",
       color: "",
       size: "",
-      quantity: ""
+      quantity: "",
+      cardColor: "#e6d0d4"
     });
   };
 
@@ -1227,7 +1351,8 @@ function App() {
         model: stockEditData.model.trim(),
         color: stockEditData.color.trim(),
         size: stockEditData.size.trim(),
-        quantity: parsedQuantity
+        quantity: parsedQuantity,
+        cardColor: stockEditData.cardColor
       });
       closeStockEditModal();
     } catch (error) {
@@ -1955,51 +2080,53 @@ function App() {
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {currentTabItems.map((item) => (
-                  <Card key={item.firestoreId} className="border border-[#f0dadd] p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-lg font-semibold text-[#5c3a3a]">{item.model || "-"}</h3>
-                        <p className="mt-1 text-sm text-[#8a6a6a]">
-                          {item.color || "-"} • Tam {item.size || "-"}
-                        </p>
+                  <div key={item.firestoreId} className="overflow-hidden rounded-xl border shadow-md transition-transform hover:scale-105" style={{ borderColor: item.cardColor, backgroundColor: `${item.cardColor}15` }}>
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="text-lg font-semibold text-[#5c3a3a]">{item.model || "-"}</h3>
+                          <p className="mt-1 text-sm text-[#8a6a6a]">
+                            {item.color || "-"} • Tam {item.size || "-"}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            item.quantity > 0
+                              ? "border border-green-200 bg-green-50 text-green-700"
+                              : "border border-red-200 bg-red-50 text-red-700"
+                          }`}
+                        >
+                          {item.quantity} un.
+                        </span>
                       </div>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          item.quantity > 0
-                            ? "border border-green-200 bg-green-50 text-green-700"
-                            : "border border-red-200 bg-red-50 text-red-700"
-                        }`}
-                      >
-                        {item.quantity} un.
-                      </span>
-                    </div>
 
-                    <div className="mt-4 grid grid-cols-3 gap-3 rounded-lg border border-[#f5eced] bg-[#fffafb] p-3 text-sm">
-                      <div>
-                        <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Modelo</p>
-                        <p className="font-medium text-[#5c3a3a]">{item.model || "-"}</p>
+                      <div className="mt-4 grid grid-cols-3 gap-3 rounded-lg border border-[#f5eced] bg-[#fffafb] p-3 text-sm">
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Modelo</p>
+                          <p className="font-medium text-[#5c3a3a]">{item.model || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Cor</p>
+                          <p className="font-medium text-[#5c3a3a]">{item.color || "-"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Tamanho</p>
+                          <p className="font-medium text-[#5c3a3a]">{item.size || "-"}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Cor</p>
-                        <p className="font-medium text-[#5c3a3a]">{item.color || "-"}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-wide text-[#a88a8a]">Tamanho</p>
-                        <p className="font-medium text-[#5c3a3a]">{item.size || "-"}</p>
-                      </div>
-                    </div>
 
-                    <div className="mt-5 flex justify-end">
-                      <Button
-                        variant="secondary"
-                        icon={Edit}
-                        onClick={() => openStockEditModal(item)}
-                        className="px-3 py-2 text-sm"
-                      >
-                        Editar
-                      </Button>
+                      <div className="mt-5 flex justify-end">
+                        <Button
+                          variant="secondary"
+                          icon={Edit}
+                          onClick={() => openStockEditModal(item)}
+                          className="px-3 py-2 text-sm"
+                        >
+                          Editar
+                        </Button>
+                      </div>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             )}
