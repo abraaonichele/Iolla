@@ -39,8 +39,7 @@ module.exports = {
       }
     ],
     artifactName: "${productName}-Installer-${version}-${arch}.${ext}",
-    signingStrategy: "auto",
-    sign: process.env.CSC_LINK ? undefined : false,
+    sign: false,
     notarize: false
   },
   win: {
