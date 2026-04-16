@@ -99,75 +99,28 @@ const getInitialUpdateStatus = () => ({
 });
 
 const ColorPicker = ({ value, onChange }) => {
-  const canvasRef = useRef(null);
-  const sliderRef = useRef(null);
-  const [hue, setHue] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
+  const [hue, setHue] = useState(0);
 
-  // Desenhar paleta circular no canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const colors = [
+    // Rosados e Vermelhos
+    "#ff6b9d", "#ff85a2", "#ffa5b5", "#ffc4d0", "#ffe6eb",
+    // Laranjas
+    "#ff8c42", "#ffaa6b", "#ffc890", "#ffe0b5", "#fff0db",
+    // Amarelos
+    "#ffd166", "#ffe066", "#fff066", "#ffffa3", "#ffffcd",
+    // Verdes
+    "#95c66b", "#b3db5c", "#d1f047", "#e8ff6b", "#f0ff99",
+    // Azuis
+    "#4ecdc4", "#5fd9d3", "#6fe5de", "#92f0ec", "#b8f7f5",
+    // Roxos
+    "#9b59b6", "#b47fd9", "#d8b3f0", "#e8d5f2", "#f3e5ff",
+    // Tons neutros e pastéis
+    "#d4a5a5", "#e6d0d4", "#f0dadd", "#e6c7c7", "#f5e6e6"
+  ];
 
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const maxRadius = Math.min(width, height) / 2 - 5;
-
-    // Limpar canvas
-    ctx.fillStyle = "#f9fafb";
-    ctx.fillRect(0, 0, width, height);
-
-    // Desenhar paleta circular
-    for (let angle = 0; angle < 360; angle += 1) {
-      const startAngle = ((angle - 90) * Math.PI) / 180;
-      const endAngle = ((angle + 1 - 90) * Math.PI) / 180;
-
-      for (let radius = 0; radius <= maxRadius; radius += 2) {
-        const saturation = (radius / maxRadius) * 100;
-        const lightness = 50 + (hue % 360) * 0.1 - saturation * 0.1;
-        ctx.fillStyle = `hsl(${angle}, ${saturation}%, ${Math.max(30, Math.min(70, lightness))}%)`;
-
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.lineTo(centerX, centerY);
-        ctx.fill();
-      }
-    }
-
-    // Desenhar circulo do hue ao redor
-    ctx.strokeStyle = "#d1d5db";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, maxRadius, 0, Math.PI * 2);
-    ctx.stroke();
-  }, [hue]);
-
-  const handleCanvasClick = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    const dx = x - centerX;
-    const dy = y - centerY;
-    let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-    if (angle < 0) angle += 360;
-
-    setHue(Math.round(angle));
-  };
-
-  const handleSliderChange = (e) => {
-    setHue(Number(e.target.value));
-  };
-
-  const handleColorSelect = () => {
-    const hslColor = `hsl(${hue}, 70%, 60%)`;
-    onChange(hslColor);
+  const handleColorClick = (color) => {
+    onChange(color);
     setShowPicker(false);
   };
 
@@ -188,38 +141,28 @@ const ColorPicker = ({ value, onChange }) => {
         <div className="fixed inset-0 z-40" onClick={() => setShowPicker(false)} />
       )}
       {showPicker && (
-        <div className="absolute left-1/2 top-full z-50 mt-2 max-h-96 w-72 -translate-x-1/2 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
-          <canvas
-            ref={canvasRef}
-            width={200}
-            height={200}
-            onClick={handleCanvasClick}
-            className="cursor-crosshair mx-auto rounded-full border border-gray-200"
-          />
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-[#8a6a6a]">Matiz: {hue}°</label>
-            <input
-              ref={sliderRef}
-              type="range"
-              min="0"
-              max="360"
-              value={hue}
-              onChange={handleSliderChange}
-              className="w-full"
-            />
+        <div className="absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 space-y-2 rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+          <div className="grid grid-cols-5 gap-2">
+            {colors.map((color) => (
+              <button
+                key={color}
+                onClick={() => handleColorClick(color)}
+                className={`h-12 rounded-lg border-2 transition-all ${
+                  value === color
+                    ? "border-[#5c3a3a] shadow-lg scale-110"
+                    : "border-gray-300 hover:border-gray-400"
+                }`}
+                style={{ backgroundColor: color }}
+                title={color}
+              />
+            ))}
           </div>
-          <div className="flex gap-2 pt-1">
+          <div className="flex gap-2 pt-2">
             <button
               onClick={() => setShowPicker(false)}
-              className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
+              className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
             >
-              Cancelar
-            </button>
-            <button
-              onClick={handleColorSelect}
-              className="flex-1 rounded-lg bg-[#5c3a3a] px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-[#4a2c2c]"
-            >
-              Aplicar
+              Fechar
             </button>
           </div>
         </div>
