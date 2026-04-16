@@ -380,7 +380,7 @@ const ConfirmationModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[11000] flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-md overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl animate-in zoom-in-95 duration-200">
         <div className="p-6">
           <div className="mb-4 flex items-center gap-4">
